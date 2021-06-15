@@ -98,10 +98,12 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
     private fun onLocationSelected() {
-        _viewModel.selectedPOI.value = selectedPoi
-        _viewModel.latitude.value = selectedPoi.latLng.latitude
-        _viewModel.longitude.value = selectedPoi.latLng.longitude
-
+        if (this::selectedPoi.isInitialized) {
+            _viewModel.selectedPOI.value = selectedPoi
+            _viewModel.latitude.value = selectedPoi.latLng.latitude
+            _viewModel.longitude.value = selectedPoi.latLng.longitude
+            _viewModel.reminderSelectedLocationStr.value = selectedPoi.name
+        }
         findNavController().popBackStack()
     }
 
