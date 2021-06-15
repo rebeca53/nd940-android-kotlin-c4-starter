@@ -25,13 +25,13 @@
             android:layout_height="0dp"
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintBottom_toTopOf="@+id/save_location_button"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
-            android:id="@+id/button"
+            android:id="@+id/save_location_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/colorAccent"

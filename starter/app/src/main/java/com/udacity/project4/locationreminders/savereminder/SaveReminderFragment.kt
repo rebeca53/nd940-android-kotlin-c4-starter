@@ -5,11 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.Observer
+import com.google.android.gms.common.api.internal.ListenerHolder
+import com.google.android.gms.maps.model.PointOfInterest
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSaveReminderBinding
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
+import org.koin.android.ext.android.bind
 import org.koin.android.ext.android.inject
 
 class SaveReminderFragment : BaseFragment() {
@@ -51,11 +55,21 @@ class SaveReminderFragment : BaseFragment() {
 //             1) add a geofencing request
 //             2) save the reminder to the local db
         }
+
+        observeSelectedPOI()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         //make sure to clear the view model after destroy, as it's a single view model.
         _viewModel.onClear()
+    }
+
+    private fun observeSelectedPOI() {
+        _viewModel.selectedPOI.observe(viewLifecycleOwner, Observer { selectedPoi ->
+            if (selectedPoi != null) {
+                binding.selectedLocation.text = selectedPoi.name
+            }
+        })
     }
 }

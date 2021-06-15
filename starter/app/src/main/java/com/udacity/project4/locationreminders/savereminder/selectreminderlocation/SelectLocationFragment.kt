@@ -4,11 +4,13 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -22,6 +24,8 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
+import kotlinx.android.synthetic.main.fragment_select_location.*
+import kotlinx.coroutines.selects.select
 import org.koin.android.ext.android.inject
 
 
@@ -39,6 +43,8 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private lateinit var map: GoogleMap
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     private lateinit var lastLocation: Location
+    private lateinit var selectedPoi: PointOfInterest
+    private lateinit var selectedMarker: Marker
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -69,17 +75,34 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
 
         //        TODO: add style to the map
-//        TODO: put a marker to location that the user selected
-//        TODO: call this function after the user confirms on the selected location
-        onLocationSelected()
+        binding.saveLocationButton
+            .setOnClickListener {
+            onLocationSelected()
+        }
 
         return binding.root
     }
 
+    private fun setPoiClick(map: GoogleMap) {
+        map.setOnPoiClickListener { poi ->
+            if (this::selectedMarker.isInitialized) {
+                selectedMarker.remove()
+            }
+            selectedMarker = map.addMarker(
+                MarkerOptions()
+                    .position(poi.latLng)
+                    .title(poi.name)
+            )
+            selectedMarker.showInfoWindow()
+            selectedPoi = poi
+        }
+    }
     private fun onLocationSelected() {
-        //        TODO: When the user confirms on the selected location,
-        //         send back the selected location details to the view model
-        //         and navigate back to the previous fragment to save the reminder and add the geofence
+        _viewModel.selectedPOI.value = selectedPoi
+        _viewModel.latitude.value = selectedPoi.latLng.latitude
+        _viewModel.longitude.value = selectedPoi.latLng.longitude
+
+        findNavController().popBackStack()
     }
 
     private fun isPermissionGranted(): Boolean {
@@ -163,7 +186,9 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
 //        map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
 //        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, zoomLevel))
         enableMyLocation()
+        setPoiClick(map)
     }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
