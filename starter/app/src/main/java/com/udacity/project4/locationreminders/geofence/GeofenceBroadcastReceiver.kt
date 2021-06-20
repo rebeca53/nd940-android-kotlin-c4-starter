@@ -13,11 +13,14 @@ import android.content.Intent
  * To do that you can use https://developer.android.com/reference/android/support/v4/app/JobIntentService to do that.
  *
  */
+val ACTION_GEOFENCE_EVENT =
+    "com.udacity.project4.action.ACTION_GEOFENCE_EVENT"
 
 class GeofenceBroadcastReceiver : BroadcastReceiver() {
+    companion object {
+        private const val TAG = "GeofenceReceiver"
+    }
     override fun onReceive(context: Context, intent: Intent) {
-
-//TODO: implement the onReceive method to receive the geofencing events at the background
-
+        GeofenceTransitionsJobIntentService.enqueueWork(context, intent)
     }
 }

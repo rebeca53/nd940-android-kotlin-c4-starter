@@ -4,7 +4,6 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 import android.Manifest
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -24,8 +23,6 @@ import com.udacity.project4.base.BaseFragment
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
-import kotlinx.android.synthetic.main.fragment_select_location.*
-import kotlinx.coroutines.selects.select
 import org.koin.android.ext.android.inject
 
 
