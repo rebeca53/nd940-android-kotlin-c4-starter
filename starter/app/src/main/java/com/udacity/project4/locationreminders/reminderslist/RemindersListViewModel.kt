@@ -55,12 +55,12 @@ class RemindersListViewModel(
                         )
                     })
 
-                    dataList.add(ReminderDataItem(
-                        "Title1",
-                    "Description1",
-                    "location1",
-                    3.toDouble(),
-                    3.toDouble()))
+//                    dataList.add(ReminderDataItem(
+//                        "Title1",
+//                    "Description1",
+//                    "location1",
+//                    3.toDouble(),
+//                    3.toDouble()))
                     remindersList.value = dataList
                 }
                 is Result.Error ->
