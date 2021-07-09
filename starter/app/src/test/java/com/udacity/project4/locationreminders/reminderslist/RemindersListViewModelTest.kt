@@ -4,6 +4,7 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
+import com.google.firebase.FirebaseApp
 import com.udacity.project4.MainCoroutineRule
 import com.udacity.project4.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
@@ -36,6 +37,8 @@ class RemindersListViewModelTest : TestCase(){
     @Before
     fun setupViewModel() {
         // todo mock firebase
+        FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
+
         reminderDataSource = FakeDataSource()
         val reminder1 = ReminderDTO(
             "Take a picture",
@@ -64,23 +67,33 @@ class RemindersListViewModelTest : TestCase(){
         stopKoin()
     }
 
-    //TODO: provide testing to the RemindersListViewModel and its live data objects
     @Test
     fun loadReminders_loadNewAddedReminder() {
         // given
         mainCoroutineRule.dispatcher.pauseDispatcher()
-        remindersListViewModel.remindersList.getOrAwaitValue()?.isEmpty()?.let { assertTrue(it) }
+        assertNull(remindersListViewModel.remindersList.value)
 
         // when
         remindersListViewModel.loadReminders()
-        assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == true)
-
-        mainCoroutineRule.dispatcher.resumeDispatcher()
-
-        assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == false)
 
         // then
-        assertEquals(reminderDataSource.reminderData.values.toList(), remindersListViewModel.remindersList.value)
+        assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == true)
+        mainCoroutineRule.dispatcher.resumeDispatcher()
+        assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == false)
+
+        val dataList = ArrayList<ReminderDataItem>()
+        dataList.addAll((reminderDataSource.reminderData.values.toList()).map { reminder ->
+            //map the reminder data from the DB to the be ready to be displayed on the UI
+            ReminderDataItem(
+                reminder.title,
+                reminder.description,
+                reminder.location,
+                reminder.latitude,
+                reminder.longitude,
+                reminder.id
+            )
+        })
+        assertEquals(dataList, remindersListViewModel.remindersList.value)
         assertEquals(false, remindersListViewModel.showNoData.getOrAwaitValue())
     }
 
@@ -88,13 +101,18 @@ class RemindersListViewModelTest : TestCase(){
     @Test
     fun loadReminders_failLoadNewAddedReminder() {
         // given
-        remindersListViewModel.remindersList.getOrAwaitValue()?.isEmpty()?.let { assertTrue(it) }
+        mainCoroutineRule.dispatcher.pauseDispatcher()
+        assertNull(remindersListViewModel.remindersList.value)
         reminderDataSource.setReturnError(true)
 
         // when
         remindersListViewModel.loadReminders()
 
         // then
+        assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == true)
+        mainCoroutineRule.dispatcher.resumeDispatcher()
+        assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == false)
+
         assertNotSame(reminderDataSource.reminderData.values.toList(), remindersListViewModel.remindersList.value)
         assertEquals(true, remindersListViewModel.showNoData.getOrAwaitValue())
     }
