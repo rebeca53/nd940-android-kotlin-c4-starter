@@ -100,7 +100,11 @@ class ReminderListFragment : BaseFragment() {
                 }
                 RemindersListViewModel.AuthenticationState.UNAUTHENTICATED -> {
                     //require login
-                    findNavController().navigate(R.id.authenticationFragment)
+                    _viewModel.navigationCommand.postValue(
+                        NavigationCommand.To(
+                            ReminderListFragmentDirections.toAuthentication()
+                        )
+                    )
                 }
                 else -> {
                     Log.e(TAG, "New $authenticationState state that doesnt require any UI change")

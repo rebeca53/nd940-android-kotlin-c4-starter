@@ -13,6 +13,9 @@ import org.koin.dsl.module
 
 class MyApp : Application() {
 
+    private val reminderRepository: ReminderDataSource
+        get() = ServiceLocator.provideRemindersRepository(this)
+
     override fun onCreate() {
         super.onCreate()
 
@@ -24,7 +27,7 @@ class MyApp : Application() {
             viewModel {
                 RemindersListViewModel(
                     get(),
-                    get() as ReminderDataSource
+                    reminderRepository
                 )
             }
             //Declare singleton definitions to be later injected using by inject()
@@ -32,10 +35,10 @@ class MyApp : Application() {
                 //This view model is declared singleton to be used across multiple fragments
                 SaveReminderViewModel(
                     get(),
-                    get() as ReminderDataSource
+                    reminderRepository
                 )
             }
-            single { RemindersLocalRepository(get()) as ReminderDataSource }
+            single { reminderRepository }
             single { LocalDB.createRemindersDao(this@MyApp) }
         }
 
