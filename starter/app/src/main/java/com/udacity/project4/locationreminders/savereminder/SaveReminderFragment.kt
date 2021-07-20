@@ -76,9 +76,9 @@ class SaveReminderFragment : BaseFragment() {
                 latitude,
                 longitude
             )
-            _viewModel.validateAndSaveReminder(reminderDataItem)
-
-            checkPermissionsAndStartGeofencing()
+            if (_viewModel.validateAndSaveReminder(reminderDataItem)) {
+                checkPermissionsAndStartGeofencing()
+            }
         }
 
         observeSelectedPOI()
