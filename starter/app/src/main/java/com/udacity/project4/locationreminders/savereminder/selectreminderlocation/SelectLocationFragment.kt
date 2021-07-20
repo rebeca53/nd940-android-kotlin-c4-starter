@@ -71,7 +71,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             Log.e(TAG, "Unable to get LocationService")
         }
 
-        //        TODO: add style to the map
         binding.saveLocationButton
             .setOnClickListener {
             onLocationSelected()

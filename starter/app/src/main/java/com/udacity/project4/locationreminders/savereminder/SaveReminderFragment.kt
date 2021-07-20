@@ -132,7 +132,6 @@ class SaveReminderFragment : BaseFragment() {
         if (foregroundAndBackgroundLocationPermissionApproved()) {
             checkDeviceLocationSettingsAndStartGeofence()
         } else {
-            // todo solve first time request permission and solve first time map fragment
             requestForegroundAndBackgroundLocationPermissions()
         }
     }

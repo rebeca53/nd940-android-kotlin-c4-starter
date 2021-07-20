@@ -1,16 +1,30 @@
 package com.udacity.project4
 
 import android.app.Application
+import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
+import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject
+import androidx.test.uiautomator.UiSelector
+import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.util.RecyclerViewMatcher
 import kotlinx.coroutines.runBlocking
+import org.hamcrest.Matchers.not
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.core.context.startKoin
@@ -66,6 +80,36 @@ class RemindersActivityTest :
     }
 
 
-//    TODO: add End to End testing to the app
+    @Test
+    fun createReminder_createAndDisplayInList(){
+        // empty list of reminder
+        val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
+        onView(withId(R.id.noDataTextView)).check(matches(isDisplayed()))
+
+        // click to add reminder
+        onView(withId(R.id.addReminderFAB)).perform(click())
+
+        // fill reminder information
+        onView(withId(R.id.reminderTitle)).perform(replaceText("Title1"))
+        onView(withId(R.id.reminderDescription)).perform(replaceText("Description1"))
+        onView(withId(R.id.selectLocation)).perform(click())
+        Thread.sleep(1500)
+        val device: UiDevice = UiDevice.getInstance(getInstrumentation())
+        val marker: UiObject = device.findObject(UiSelector().descriptionContains("Google"))
+        marker.click()
+        Thread.sleep(1500)
+        onView(withId(R.id.save_location_button)).perform(click())
+        Thread.sleep(3500)
+
+        // save reminder
+        onView(withId(R.id.saveReminder)).perform(click())
+        Thread.sleep(500)
+
+        // back to list. Now it is not empty
+        onView(withId(R.id.noDataTextView)).check(matches(not(isDisplayed())))
+        onView(RecyclerViewMatcher(R.id.reminderssRecyclerView).atPosition(0))
+            .check(matches(hasDescendant(withText("Title1"))))
+        activityScenario.close()
+    }
 
 }

@@ -36,7 +36,6 @@ class RemindersListViewModelTest : TestCase(){
 
     @Before
     fun setupViewModel() {
-        // todo mock firebase
         FirebaseApp.initializeApp(ApplicationProvider.getApplicationContext())
 
         reminderDataSource = FakeDataSource()
