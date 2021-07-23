@@ -2,9 +2,12 @@ package com.udacity.project4.locationreminders.savereminder.selectreminderlocati
 
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.*
 import androidx.core.app.ActivityCompat
@@ -18,8 +21,11 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.*
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
+import com.google.android.material.snackbar.Snackbar
+import com.udacity.project4.BuildConfig
 import com.udacity.project4.R
 import com.udacity.project4.base.BaseFragment
+import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.databinding.FragmentSelectLocationBinding
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import com.udacity.project4.utils.setDisplayHomeAsUpEnabled
@@ -79,6 +85,35 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         return binding.root
     }
 
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just add a marker near Sydney, Australia.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        enableMyLocation()
+        setPoiClick(map)
+    }
+
+    // Request enable user location. Get device location when permission is granted.
+    private fun enableMyLocation() {
+        if (isPermissionGranted()) {
+            map.setMyLocationEnabled(true)
+            getDeviceLocation()
+        }
+        else {
+            requestPermissions(
+                arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
+                REQUEST_LOCATION_PERMISSION
+            )
+        }
+    }
+
     private fun setPoiClick(map: GoogleMap) {
         map.setOnPoiClickListener { poi ->
             if (this::selectedMarker.isInitialized) {
@@ -93,6 +128,7 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
             selectedPoi = poi
         }
     }
+
     private fun onLocationSelected() {
         if (this::selectedPoi.isInitialized) {
             _viewModel.selectedPOI.value = selectedPoi
@@ -109,23 +145,6 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         return ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
-
-    // Request enable user location. Get device location when permission is granted.
-    private fun enableMyLocation() {
-        if (isPermissionGranted()) {
-            map.setMyLocationEnabled(true)
-            getDeviceLocation()
-        }
-        else {
-            val activity = getActivity()
-            if (activity != null)
-                ActivityCompat.requestPermissions(
-                    activity,
-                    arrayOf<String>(Manifest.permission.ACCESS_FINE_LOCATION),
-                    REQUEST_LOCATION_PERMISSION
-                )
-        }
     }
 
     /*
@@ -166,36 +185,28 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
         }
     }
 
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
-    override fun onMapReady(googleMap: GoogleMap) {
-        map = googleMap
-
-        // Add a marker in Sydney and move the camera
-//        val sydney = LatLng(-34.0, 151.0)
-//        val zoomLevel = 15f // streets level
-//        map.addMarker(MarkerOptions().position(sydney).title("Marker in Sydney"))
-//        map.moveCamera(CameraUpdateFactory.newLatLngZoom(sydney, zoomLevel))
-        enableMyLocation()
-        setPoiClick(map)
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<String>,
         grantResults: IntArray) {
         // Check if location permissions are granted and if so enable the
         // location data layer.
-        if (requestCode == REQUEST_LOCATION_PERMISSION) {
-            if (grantResults.isNotEmpty() && (grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+        if (requestCode == REQUEST_LOCATION_PERMISSION && grantResults.isNotEmpty()) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 enableMyLocation()
+            }
+            else {
+                map.setMyLocationEnabled(false)
+                Snackbar.make(binding.root,
+                    R.string.permission_denied_explanation,
+                    Snackbar.LENGTH_INDEFINITE).setAction(R.string.settings) {
+                    startActivity(Intent().apply {
+                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        data = Uri.fromParts("package", BuildConfig.APPLICATION_ID, null)
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    })
+                    _viewModel.navigationCommand.value = NavigationCommand.Back
+                }.show()
             }
         }
     }
