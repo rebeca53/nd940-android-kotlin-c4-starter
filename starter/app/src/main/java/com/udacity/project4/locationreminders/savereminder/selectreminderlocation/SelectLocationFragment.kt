@@ -155,14 +155,14 @@ class SelectLocationFragment : BaseFragment(), OnMapReadyCallback {
     private fun getDeviceLocation() {
         try {
             if (isPermissionGranted()) {
-                val locationResult: Task<Location> = fusedLocationProviderClient.getLastLocation()
-                activity?.let {
+                val locationResult: Task<Location> = fusedLocationProviderClient.lastLocation
+                activity?.let { it ->
                     locationResult.addOnCompleteListener(
                         it,
                         OnCompleteListener<Location?> { task ->
-                            if (task.isSuccessful) {
-                                // Set the map's camera position to the current location of the device.
-                                lastLocation = task.result as Location
+                            if (task.isSuccessful && (task.result != null)) {
+                                // Set the map's camera position to the current location of the device
+                                    lastLocation = task.result as Location
                                 Log.d(TAG, "Latitude: " + lastLocation.getLatitude())
                                 Log.d(TAG, "Longitude: " + lastLocation.getLongitude())
                                 map.moveCamera(

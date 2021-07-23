@@ -3,9 +3,10 @@ package com.udacity.project4.locationreminders.savereminder
 import android.Manifest
 import android.annotation.TargetApi
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
-import android.content.IntentSender
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
@@ -16,7 +17,6 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
-import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
@@ -38,10 +38,11 @@ class SaveReminderFragment : BaseFragment() {
     companion object {
         private const val TAG = "SaveReminderFragment"
     }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         binding =
             DataBindingUtil.inflate(inflater, R.layout.fragment_save_reminder, container, false)
 
@@ -57,9 +58,16 @@ class SaveReminderFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = this
         binding.selectLocation.setOnClickListener {
-            //            Navigate to another fragment to get the user location
-            _viewModel.navigationCommand.value =
-                NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
+            if (isLocationOn()) {
+                //            Navigate to another fragment to get the user location
+                _viewModel.navigationCommand.value =
+                    NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
+            } else {
+                Snackbar.make(binding.root,
+                    R.string.location_required_error,
+                    Snackbar.LENGTH_LONG)
+                    .show()
+            }
         }
 
         binding.saveReminder.setOnClickListener {
@@ -96,6 +104,24 @@ class SaveReminderFragment : BaseFragment() {
                 binding.selectedLocation.text = selectedPoi.name
             }
         })
+    }
+
+    private fun isLocationOn(): Boolean {
+        val lm = context!!.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        var gpsEnabled = false
+        var networkEnabled = false
+
+        try {
+            gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER)
+        } catch (ex: Exception) {
+        }
+
+        try {
+            networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+        } catch (ex: Exception) {
+        }
+
+        return gpsEnabled || networkEnabled
     }
 
     ///------------------------------------------------------------
@@ -202,34 +228,16 @@ class SaveReminderFragment : BaseFragment() {
     }
 
     private fun checkDeviceLocationSettingsAndStartGeofence(resolve:Boolean = true){
-        val locationRequest = LocationRequest.create().apply {
-            priority = LocationRequest.PRIORITY_LOW_POWER
-        }
-        val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
-        val settingsClient = LocationServices.getSettingsClient(context!!)
-        val locationSettingsResponseTask =
-            settingsClient.checkLocationSettings(builder.build())
-        locationSettingsResponseTask.addOnFailureListener {exception ->
-            if (exception is ResolvableApiException && resolve) {
-                try {
-                    exception.startResolutionForResult(activity!!, REQUEST_TURN_DEVICE_LOCATION_ON)
-                } catch (sendEx: IntentSender.SendIntentException) {
-                    Log.d(TAG, "Error getting location settings resolution ${sendEx.message}")
-                }
-            } else {
-                Snackbar.make(
-                    binding.root,
-                    R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-                ).setAction(android.R.string.ok) {
-                    checkDeviceLocationSettingsAndStartGeofence()
-                }.show()
-            }
-        }
-        locationSettingsResponseTask.addOnCompleteListener {
-            if (it.isSuccessful) {
-                Log.d(TAG, "Add geofence for each location")
-                addGeofence()
-            }
+        if (isLocationOn()) {
+            Log.d(TAG, "Add geofence for each location")
+            addGeofence()
+        } else {
+            Snackbar.make(
+                binding.root,
+                R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
+            ).setAction(android.R.string.ok) {
+                checkDeviceLocationSettingsAndStartGeofence()
+            }.show()
         }
     }
 
