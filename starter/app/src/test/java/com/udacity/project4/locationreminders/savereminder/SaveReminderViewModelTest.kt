@@ -76,7 +76,7 @@ class SaveReminderViewModelTest : TestCase() {
         assertNull(saveReminderViewModel.reminderTitle.getOrAwaitValue())
         assertNull(saveReminderViewModel.reminderDescription.getOrAwaitValue())
         assertNull(saveReminderViewModel.reminderSelectedLocationStr.getOrAwaitValue())
-        assertNull(saveReminderViewModel.selectedPOI.getOrAwaitValue())
+        assertNull(saveReminderViewModel.selectedMarker.getOrAwaitValue())
         assertNull(saveReminderViewModel.latitude.getOrAwaitValue())
         assertNull(saveReminderViewModel.longitude.getOrAwaitValue())
     }

@@ -99,9 +99,9 @@ class SaveReminderFragment : BaseFragment() {
     }
 
     private fun observeSelectedPOI() {
-        _viewModel.selectedPOI.observe(viewLifecycleOwner, Observer { selectedPoi ->
-            if (selectedPoi != null) {
-                binding.selectedLocation.text = selectedPoi.name
+        _viewModel.selectedMarker.observe(viewLifecycleOwner, Observer { selectedMarker ->
+            if (selectedMarker != null) {
+                binding.selectedLocation.text = selectedMarker.title
             }
         })
     }
