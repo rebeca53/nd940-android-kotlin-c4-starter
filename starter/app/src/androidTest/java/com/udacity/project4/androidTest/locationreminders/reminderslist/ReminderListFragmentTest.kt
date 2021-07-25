@@ -1,4 +1,4 @@
-package com.udacity.project4.locationreminders.reminderslist
+package com.udacity.project4.androidTest.locationreminders.reminderslist
 
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
@@ -16,8 +16,10 @@ import com.udacity.project4.R
 import com.udacity.project4.ServiceLocator
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.locationreminders.data.local.FakeReminderRepository
-import com.udacity.project4.util.RecyclerViewMatcher
+import com.udacity.project4.androidTest.locationreminders.data.local.FakeReminderRepository
+import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
+import com.udacity.project4.androidTest.util.RecyclerViewMatcher
+import com.udacity.project4.locationreminders.reminderslist.ReminderListFragmentDirections
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After

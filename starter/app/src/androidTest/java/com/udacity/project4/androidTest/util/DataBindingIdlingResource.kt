@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.udacity.project4.util
+package com.udacity.project4.androidTest.util
 
 import android.view.View
 import androidx.databinding.DataBindingUtil

@@ -1,4 +1,4 @@
-package com.udacity.project4
+package com.udacity.project4.androidTest
 
 import android.app.Application
 import androidx.test.core.app.ActivityScenario
@@ -12,15 +12,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
 import androidx.test.uiautomator.UiDevice
-import androidx.test.uiautomator.UiObject
-import androidx.test.uiautomator.UiSelector
+import com.udacity.project4.R
+import com.udacity.project4.androidTest.util.RecyclerViewMatcher
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
 import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
-import com.udacity.project4.util.RecyclerViewMatcher
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matchers.not
 import org.junit.Before
@@ -32,6 +31,7 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
+
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -82,6 +82,8 @@ class RemindersActivityTest :
 
     @Test
     fun createReminder_createAndDisplayInList(){
+        val x = 600
+        val y = 1200
         // empty list of reminder
         val activityScenario = ActivityScenario.launch(RemindersActivity::class.java)
         onView(withId(R.id.noDataTextView)).check(matches(isDisplayed()))
@@ -95,8 +97,7 @@ class RemindersActivityTest :
         onView(withId(R.id.selectLocation)).perform(click())
         Thread.sleep(1500)
         val device: UiDevice = UiDevice.getInstance(getInstrumentation())
-        val marker: UiObject = device.findObject(UiSelector().descriptionContains("Google"))
-        marker.click()
+        device.swipe(x, y, x, y, 400);
         Thread.sleep(1500)
         onView(withId(R.id.save_location_button)).perform(click())
         Thread.sleep(3500)

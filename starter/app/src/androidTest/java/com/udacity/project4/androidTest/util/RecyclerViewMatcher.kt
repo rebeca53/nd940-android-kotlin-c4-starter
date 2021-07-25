@@ -1,4 +1,4 @@
-package com.udacity.project4.util
+package com.udacity.project4.androidTest.util
 
 import android.content.res.Resources
 import android.view.View
