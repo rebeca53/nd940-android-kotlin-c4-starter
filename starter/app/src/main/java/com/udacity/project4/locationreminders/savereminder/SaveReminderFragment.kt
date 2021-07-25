@@ -14,6 +14,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
@@ -84,9 +85,7 @@ class SaveReminderFragment : BaseFragment() {
                 latitude,
                 longitude
             )
-            if (_viewModel.validateAndSaveReminder(reminderDataItem)) {
-                checkPermissionsAndStartGeofencing()
-            }
+            checkPermissionsAndStartGeofencing()
         }
 
         observeSelectedPOI()
@@ -273,11 +272,15 @@ class SaveReminderFragment : BaseFragment() {
         geofencingClient.addGeofences(geofencingRequest, geofencePendingIntent)?.run {
             addOnSuccessListener {
                 Log.e(TAG, "Add geofence ${geofence.requestId}")
+                Log.d(TAG, "Location added!!!")
+                // save reminder to local db
+                _viewModel.validateAndSaveReminder(reminderDataItem)
             }
             addOnFailureListener {
                 if ((it.message!= null)) {
                     Log.w(TAG, it.message!!)
                 }
+                Toast.makeText(context, R.string.error_adding_geofence,Toast.LENGTH_LONG).show()
             }
         }
     }
