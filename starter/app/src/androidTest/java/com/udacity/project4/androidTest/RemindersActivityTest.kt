@@ -1,5 +1,6 @@
 package com.udacity.project4.androidTest
 
+import android.app.Activity
 import android.app.Application
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
@@ -11,9 +12,11 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
+import androidx.test.rule.ActivityTestRule
 import androidx.test.uiautomator.UiDevice
 import com.udacity.project4.R
 import com.udacity.project4.androidTest.util.RecyclerViewMatcher
+import com.udacity.project4.androidTest.util.ToastMatcher
 import com.udacity.project4.locationreminders.RemindersActivity
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.local.LocalDB
@@ -21,8 +24,9 @@ import com.udacity.project4.locationreminders.data.local.RemindersLocalRepositor
 import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
 import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import kotlinx.coroutines.runBlocking
-import org.hamcrest.Matchers.not
+import org.hamcrest.Matchers.*
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -31,7 +35,6 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.koin.test.AutoCloseKoinTest
 import org.koin.test.get
-
 
 @RunWith(AndroidJUnit4::class)
 @LargeTest
@@ -95,18 +98,19 @@ class RemindersActivityTest :
         onView(withId(R.id.reminderTitle)).perform(replaceText("Title1"))
         onView(withId(R.id.reminderDescription)).perform(replaceText("Description1"))
         onView(withId(R.id.selectLocation)).perform(click())
-        Thread.sleep(1500)
         val device: UiDevice = UiDevice.getInstance(getInstrumentation())
         device.swipe(x, y, x, y, 400);
-        Thread.sleep(1500)
         onView(withId(R.id.save_location_button)).perform(click())
-        Thread.sleep(3500)
 
         // save reminder
         onView(withId(R.id.saveReminder)).perform(click())
         Thread.sleep(500)
 
         // back to list. Now it is not empty
+        // Then I should see the toast that says that reminder is saved
+        onView(withText(R.string.reminder_saved)).inRoot(ToastMatcher())
+            .check(matches(isDisplayed()))
+
         onView(withId(R.id.noDataTextView)).check(matches(not(isDisplayed())))
         onView(RecyclerViewMatcher(R.id.reminderssRecyclerView).atPosition(0))
             .check(matches(hasDescendant(withText("Title1"))))
