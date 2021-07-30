@@ -9,7 +9,6 @@ import com.udacity.project4.MainCoroutineRule
 import com.udacity.project4.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
-import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import junit.framework.TestCase
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.junit.After
@@ -111,6 +110,7 @@ class RemindersListViewModelTest : TestCase(){
         assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == true)
         mainCoroutineRule.dispatcher.resumeDispatcher()
         assertTrue(remindersListViewModel.showLoading.getOrAwaitValue() == false)
+        assertEquals(remindersListViewModel.showSnackBar.getOrAwaitValue(), "Test Exception")
 
         assertNotSame(reminderDataSource.reminderData.values.toList(), remindersListViewModel.remindersList.value)
         assertEquals(true, remindersListViewModel.showNoData.getOrAwaitValue())
