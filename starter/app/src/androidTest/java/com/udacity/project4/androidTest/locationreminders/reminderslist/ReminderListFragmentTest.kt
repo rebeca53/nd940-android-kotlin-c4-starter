@@ -1,31 +1,41 @@
 package com.udacity.project4.androidTest.locationreminders.reminderslist
 
+import android.app.Application
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.RecyclerView
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import com.google.firebase.auth.FirebaseAuth
 import com.udacity.project4.R
 import com.udacity.project4.ServiceLocator
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.androidTest.locationreminders.data.local.FakeReminderRepository
+import com.udacity.project4.androidTest.util.DataBindingIdlingResource
 import com.udacity.project4.locationreminders.reminderslist.ReminderListFragment
 import com.udacity.project4.androidTest.util.RecyclerViewMatcher
+import com.udacity.project4.androidTest.util.monitorFragment
 import com.udacity.project4.locationreminders.reminderslist.ReminderListFragmentDirections
+import com.udacity.project4.locationreminders.reminderslist.RemindersListViewModel
+import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 
@@ -36,9 +46,41 @@ import org.mockito.Mockito.verify
 @MediumTest
 class ReminderListFragmentTest {
     private lateinit var repository: ReminderDataSource
+    private val dataBindingIdlingResource = DataBindingIdlingResource()
+    private lateinit var appContext: Application
 
     @Before
-    fun initRepository() {
+    fun prepare() {
+        stopKoin()
+        appContext = ApplicationProvider.getApplicationContext()
+
+        initRepository()
+        val myModule = module {
+            viewModel {
+                RemindersListViewModel(
+                    appContext,
+                    repository
+                )
+            }
+        }
+        startKoin {
+            modules(listOf(myModule))
+        }
+    }
+
+    @Before
+    fun registerIdlingResource() {
+        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
+    }
+
+    @After
+    fun unregisterIdlingResource() {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+    }
+
+    private fun initRepository() {
         repository = FakeReminderRepository()
         ServiceLocator.remindersRepository = repository
     }
@@ -63,22 +105,8 @@ class ReminderListFragmentTest {
         // WHEN
         val navController = mock(NavController::class.java)
 
-        launchFragmentInContainer( null, R.style.AppTheme) {
-            ReminderListFragment().also { fragment ->
-
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-            }
-        }
-
+        val scenario = launchFragmentInContainer<ReminderListFragment>( null, R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
         // then
         // CHeck if recycler has item at position 0true
         onView(withId(R.id.reminderssRecyclerView))
@@ -96,21 +124,8 @@ class ReminderListFragmentTest {
         // WHEN
         val navController = mock(NavController::class.java)
 
-        launchFragmentInContainer( null, R.style.AppTheme) {
-            ReminderListFragment().also { fragment ->
-
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-            }
-        }
+        val scenario = launchFragmentInContainer<ReminderListFragment>( null, R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
 
         // then
         onView(withId(R.id.noDataTextView))
@@ -133,21 +148,8 @@ class ReminderListFragmentTest {
         // WHEN
         val navController = mock(NavController::class.java)
 
-        launchFragmentInContainer( null, R.style.AppTheme) {
-            ReminderListFragment().also { fragment ->
-
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-            }
-        }
+        val scenario = launchFragmentInContainer<ReminderListFragment>( null, R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
 
         // then
         onView(withId(R.id.noDataTextView))
@@ -176,6 +178,7 @@ class ReminderListFragmentTest {
                 }
             }
         }
+        dataBindingIdlingResource.monitorFragment(scenario)
 
         scenario.onFragment {
             Navigation.setViewNavController(it.view!!, navController)
@@ -189,41 +192,4 @@ class ReminderListFragmentTest {
             ReminderListFragmentDirections.toSaveReminder()
         )
     }
-
-    @Test
-    fun signOut_navigateToAuthentication() {
-        // given
-
-        if (FirebaseAuth.getInstance().currentUser != null)
-            FirebaseAuth.getInstance().signOut()
-
-        val navController = mock(NavController::class.java)
-
-        // when
-        val scenario = launchFragmentInContainer( null, R.style.AppTheme) {
-            ReminderListFragment().also { fragment ->
-
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-            }
-        }
-
-        scenario.onFragment {
-            Navigation.setViewNavController(it.view!!, navController)
-        }
-
-        // then
-        verify(navController).navigate(
-            ReminderListFragmentDirections.toAuthentication()
-        )
-    }
-
 }

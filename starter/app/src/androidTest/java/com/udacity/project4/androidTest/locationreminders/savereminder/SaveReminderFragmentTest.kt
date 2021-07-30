@@ -1,9 +1,12 @@
 package com.udacity.project4.androidTest.locationreminders.savereminder
 
+import android.app.Application
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.espresso.Espresso.*
+import androidx.test.espresso.IdlingRegistry
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions
@@ -17,15 +20,21 @@ import com.udacity.project4.ServiceLocator
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.androidTest.locationreminders.data.local.FakeReminderRepository
-import com.udacity.project4.androidTest.util.ToastMatcher
+import com.udacity.project4.androidTest.util.DataBindingIdlingResource
+import com.udacity.project4.androidTest.util.monitorFragment
 import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
 import com.udacity.project4.locationreminders.savereminder.SaveReminderFragmentDirections
+import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
+import com.udacity.project4.utils.EspressoIdlingResource
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.koin.core.context.startKoin
+import org.koin.core.context.stopKoin
+import org.koin.dsl.module
 import org.mockito.Mockito
 
 
@@ -36,9 +45,41 @@ import org.mockito.Mockito
 class SaveReminderFragmentTest {
 
     private lateinit var repository: ReminderDataSource
+    private val dataBindingIdlingResource = DataBindingIdlingResource()
+    private lateinit var appContext: Application
 
     @Before
-    fun initRepository() {
+    fun prepare() {
+        stopKoin()
+        appContext = ApplicationProvider.getApplicationContext()
+
+        initRepository()
+        val myModule = module {
+            single {
+                SaveReminderViewModel(
+                    appContext,
+                    repository
+                )
+            }
+        }
+        startKoin {
+            modules(listOf(myModule))
+        }
+    }
+
+    @Before
+    fun registerIdlingResource() {
+        IdlingRegistry.getInstance().register(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().register(dataBindingIdlingResource)
+    }
+
+    @After
+    fun unregisterIdlingResource() {
+        IdlingRegistry.getInstance().unregister(EspressoIdlingResource.countingIdlingResource)
+        IdlingRegistry.getInstance().unregister(dataBindingIdlingResource)
+    }
+
+    private fun initRepository() {
         repository = FakeReminderRepository()
         ServiceLocator.remindersRepository = repository
     }
@@ -53,21 +94,8 @@ class SaveReminderFragmentTest {
         // given
         val navController = Mockito.mock(NavController::class.java)
 
-        launchFragmentInContainer( null, R.style.AppTheme) {
-            SaveReminderFragment().also { fragment ->
-
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-            }
-        }
+        val scenario = launchFragmentInContainer<SaveReminderFragment>( null, R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
 
         // WHEN
 
@@ -75,8 +103,6 @@ class SaveReminderFragmentTest {
         onView(withId(R.id.saveReminder)).perform(click())
 
         // then
-//        onView(withText(R.string.error_adding_geofence)).inRoot(ToastMatcher())
-//            .check(matches(isDisplayed()))
         onView(withId(com.google.android.material.R.id.snackbar_text))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
         onView(withId(com.google.android.material.R.id.snackbar_text))
@@ -89,21 +115,9 @@ class SaveReminderFragmentTest {
 
         val navController = Mockito.mock(NavController::class.java)
 
-        launchFragmentInContainer( null, R.style.AppTheme) {
-            SaveReminderFragment().also { fragment ->
+        val scenario = launchFragmentInContainer<SaveReminderFragment>( null, R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
 
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-            }
-        }
         onView(withId(R.id.reminderTitle)).perform(typeText("Title1"))
         onView(withId(R.id.reminderDescription)).perform(typeText("Description1"))
         closeSoftKeyboard()
@@ -132,27 +146,8 @@ class SaveReminderFragmentTest {
 
         val navController = Mockito.mock(NavController::class.java)
 
-        launchFragmentInContainer( null, R.style.AppTheme) {
-            SaveReminderFragment().also { fragment ->
-
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-
-                fragment._viewModel.reminderTitle.value = reminder1.title
-                fragment._viewModel.reminderDescription.value = reminder1.description
-                fragment._viewModel.reminderSelectedLocationStr.value = "Location1"
-                fragment._viewModel.latitude.value = reminder1.latitude
-                fragment._viewModel.longitude.value = reminder1.longitude
-            }
-        }
+        val scenario = launchFragmentInContainer<SaveReminderFragment>( null, R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
 
         // WHEN
         // click to save
@@ -167,20 +162,11 @@ class SaveReminderFragmentTest {
         // given
         val navController = Mockito.mock(NavController::class.java)
 
-        launchFragmentInContainer( null, R.style.AppTheme) {
-            SaveReminderFragment().also { fragment ->
+        val scenario = launchFragmentInContainer<SaveReminderFragment>( null, R.style.AppTheme)
+        dataBindingIdlingResource.monitorFragment(scenario)
 
-                // In addition to returning a new instance of our Fragment,
-                // get a callback whenever the fragment’s view is created
-                // or destroyed so that we can set the NavController
-                fragment.viewLifecycleOwnerLiveData.observeForever { viewLifecycleOwner ->
-                    if (viewLifecycleOwner != null) {
-                        // The fragment’s view has just been created
-                        navController.setGraph(R.navigation.nav_graph)
-                        Navigation.setViewNavController(fragment.requireView(), navController)
-                    }
-                }
-            }
+        scenario.onFragment {
+            Navigation.setViewNavController(it.view!!, navController)
         }
         // WHEN
         // click to save

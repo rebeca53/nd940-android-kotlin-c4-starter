@@ -1,6 +1,5 @@
 package com.udacity.project4.androidTest
 
-import android.app.Activity
 import android.app.Application
 import androidx.test.core.app.ActivityScenario
 import androidx.test.core.app.ApplicationProvider.getApplicationContext
@@ -12,7 +11,6 @@ import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry.getInstrumentation
-import androidx.test.rule.ActivityTestRule
 import androidx.test.uiautomator.UiDevice
 import com.udacity.project4.R
 import com.udacity.project4.androidTest.util.RecyclerViewMatcher
@@ -26,7 +24,6 @@ import com.udacity.project4.locationreminders.savereminder.SaveReminderViewModel
 import kotlinx.coroutines.runBlocking
 import org.hamcrest.Matchers.*
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -104,7 +101,6 @@ class RemindersActivityTest :
 
         // save reminder
         onView(withId(R.id.saveReminder)).perform(click())
-        Thread.sleep(500)
 
         // back to list. Now it is not empty
         // Then I should see the toast that says that reminder is saved
@@ -116,5 +112,4 @@ class RemindersActivityTest :
             .check(matches(hasDescendant(withText("Title1"))))
         activityScenario.close()
     }
-
 }
