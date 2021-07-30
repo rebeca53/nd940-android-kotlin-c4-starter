@@ -149,4 +149,9 @@ class RemindersDaoTest {
         assertTrue(remainingReminder.isEmpty())
     }
 
+    @Test
+    fun getReminders_noData() = runBlockingTest {
+        val remainingReminder = database.reminderDao().getReminders()
+        assertTrue(remainingReminder.isEmpty())
+    }
 }
