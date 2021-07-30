@@ -5,6 +5,7 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 import com.udacity.project4.MainCoroutineRule
+import com.udacity.project4.R
 import com.udacity.project4.base.NavigationCommand
 import com.udacity.project4.getOrAwaitValue
 import com.udacity.project4.locationreminders.data.FakeDataSource
@@ -93,7 +94,7 @@ class SaveReminderViewModelTest : TestCase() {
             Double.MAX_VALUE)
 
         // when
-        saveReminderViewModel.validateAndSaveReminder(reminder)
+        saveReminderViewModel.saveReminder(reminder)
 
         // then
         assertTrue(reminderDataSource.reminderData.contains(reminder.id))
@@ -124,12 +125,11 @@ class SaveReminderViewModelTest : TestCase() {
             Double.MAX_VALUE)
 
         //when
-        saveReminderViewModel.validateAndSaveReminder(reminder)
+        saveReminderViewModel.saveReminder(reminder)
 
         //then
         assertFalse(reminderDataSource.reminderData.contains(reminder.id))
         assertNotSame(reminderDataSource.reminderData[reminder.id], reminder)
-//        assertEquals(R.string.err_enter_title, saveReminderViewModel.showSnackBar.getOrAwaitValue())
     }
 
     @Test
@@ -143,13 +143,11 @@ class SaveReminderViewModelTest : TestCase() {
             Double.MAX_VALUE)
 
         // when
-        saveReminderViewModel.validateAndSaveReminder(reminder)
+        saveReminderViewModel.saveReminder(reminder)
 
         // then
         assertFalse(reminderDataSource.reminderData.contains(reminder.id))
         assertNotSame(reminderDataSource.reminderData[reminder.id], reminder)
-//        assertEquals(R.string.err_select_location, saveReminderViewModel.showSnackBar.getOrAwaitValue())
-
     }
 
 }

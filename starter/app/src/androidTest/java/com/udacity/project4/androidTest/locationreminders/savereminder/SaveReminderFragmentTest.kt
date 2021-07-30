@@ -17,6 +17,7 @@ import com.udacity.project4.ServiceLocator
 import com.udacity.project4.locationreminders.data.ReminderDataSource
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.androidTest.locationreminders.data.local.FakeReminderRepository
+import com.udacity.project4.androidTest.util.ToastMatcher
 import com.udacity.project4.locationreminders.savereminder.SaveReminderFragment
 import com.udacity.project4.locationreminders.savereminder.SaveReminderFragmentDirections
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -74,6 +75,8 @@ class SaveReminderFragmentTest {
         onView(withId(R.id.saveReminder)).perform(click())
 
         // then
+//        onView(withText(R.string.error_adding_geofence)).inRoot(ToastMatcher())
+//            .check(matches(isDisplayed()))
         onView(withId(com.google.android.material.R.id.snackbar_text))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
         onView(withId(com.google.android.material.R.id.snackbar_text))

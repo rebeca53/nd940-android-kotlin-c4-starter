@@ -250,6 +250,13 @@ class SaveReminderFragment : BaseFragment() {
     private fun addGeofence() {
         if (!this::reminderDataItem.isInitialized) {
             Log.e(TAG, "No reminder location to geo fence")
+//            Toast.makeText(context, R.string.error_adding_geofence,Toast.LENGTH_LONG).show()
+            return
+        }
+
+
+
+        if (!_viewModel.validateEnteredData(reminderDataItem)) {
             return
         }
 
@@ -274,7 +281,7 @@ class SaveReminderFragment : BaseFragment() {
                 Log.e(TAG, "Add geofence ${geofence.requestId}")
                 Log.d(TAG, "Location added!!!")
                 // save reminder to local db
-                _viewModel.validateAndSaveReminder(reminderDataItem)
+                _viewModel.saveReminder(reminderDataItem)
             }
             addOnFailureListener {
                 if ((it.message!= null)) {
