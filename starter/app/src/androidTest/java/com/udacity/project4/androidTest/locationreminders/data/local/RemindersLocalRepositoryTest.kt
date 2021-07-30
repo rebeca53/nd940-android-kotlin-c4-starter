@@ -1,12 +1,13 @@
-package com.udacity.project4.locationreminders.data.local
+package com.udacity.project4.androidTest.locationreminders.data.local
 
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.MediumTest
-import com.udacity.project4.MainCoroutineRule
 import com.udacity.project4.locationreminders.data.dto.ReminderDTO
 import com.udacity.project4.locationreminders.data.dto.Result
+import com.udacity.project4.locationreminders.data.local.RemindersDatabase
+import com.udacity.project4.locationreminders.data.local.RemindersLocalRepository
 import junit.framework.Assert.assertTrue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -30,11 +31,6 @@ class RemindersLocalRepositoryTest {
 
     private lateinit var reminderLocalRepository: RemindersLocalRepository
     private lateinit var database: RemindersDatabase
-
-    // Set the main coroutines dispatcher for unit testing.
-    @ExperimentalCoroutinesApi
-    @get:Rule
-    var mainCoroutineRule = MainCoroutineRule()
 
     @Before
     fun setup() {
