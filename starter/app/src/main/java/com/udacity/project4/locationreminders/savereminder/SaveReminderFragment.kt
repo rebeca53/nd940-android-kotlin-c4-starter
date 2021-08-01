@@ -5,6 +5,7 @@ import android.annotation.TargetApi
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.LocationManager
 import android.net.Uri
@@ -18,6 +19,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
+import com.google.android.gms.common.api.ResolvableApiException
 import com.google.android.gms.location.*
 import com.google.android.material.snackbar.Snackbar
 import com.udacity.project4.BuildConfig
@@ -236,12 +238,35 @@ class SaveReminderFragment : BaseFragment() {
             Log.d(TAG, "Add geofence for each location")
             addGeofence()
         } else {
-            Snackbar.make(
-                binding.root,
-                R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
-            ).setAction(android.R.string.ok) {
-                checkDeviceLocationSettingsAndStartGeofence()
-            }.show()
+            val locationRequest = LocationRequest.create().apply {
+                priority = LocationRequest.PRIORITY_LOW_POWER
+            }
+            val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+            val settingsClient = LocationServices.getSettingsClient(context!!)
+            val locationSettingsResponseTask =
+                settingsClient.checkLocationSettings(builder.build())
+            locationSettingsResponseTask.addOnFailureListener {exception ->
+                if (exception is ResolvableApiException && resolve) {
+                    try {
+                        exception.startResolutionForResult(activity!!, REQUEST_TURN_DEVICE_LOCATION_ON)
+                    } catch (sendEx: IntentSender.SendIntentException) {
+                        Log.d(TAG, "Error getting location settings resolution ${sendEx.message}")
+                    }
+                } else {
+                    Snackbar.make(
+                        binding.root,
+                        R.string.location_required_error, Snackbar.LENGTH_INDEFINITE
+                    ).setAction(android.R.string.ok) {
+                        checkDeviceLocationSettingsAndStartGeofence()
+                    }.show()
+                }
+            }
+            locationSettingsResponseTask.addOnCompleteListener {
+                if (it.isSuccessful) {
+                    Log.d(TAG, "Add geofence for each location")
+                    addGeofence()
+                }
+            }
         }
     }
 
