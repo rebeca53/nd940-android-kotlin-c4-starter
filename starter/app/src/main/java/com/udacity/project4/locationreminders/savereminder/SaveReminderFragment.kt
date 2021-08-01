@@ -61,21 +61,9 @@ class SaveReminderFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.lifecycleOwner = this
         binding.selectLocation.setOnClickListener {
-            val foregroundLocationApproved = (
-                    PackageManager.PERMISSION_GRANTED ==
-                            ActivityCompat.checkSelfPermission(context!!,
-                                Manifest.permission.ACCESS_FINE_LOCATION)
-                    )
-            if (foregroundLocationApproved) {
-                //            Navigate to another fragment to get the user location
-                _viewModel.navigationCommand.value =
-                    NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
-            } else {
-                Snackbar.make(binding.root,
-                    R.string.permission_denied_explanation,
-                    Snackbar.LENGTH_LONG)
-                    .show()
-            }
+            // Navigate to another fragment to get the user location
+            _viewModel.navigationCommand.value =
+                NavigationCommand.To(SaveReminderFragmentDirections.actionSaveReminderFragmentToSelectLocationFragment())
         }
 
         binding.saveReminder.setOnClickListener {
