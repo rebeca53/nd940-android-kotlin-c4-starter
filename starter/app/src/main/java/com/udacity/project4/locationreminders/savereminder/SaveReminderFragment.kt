@@ -236,7 +236,14 @@ class SaveReminderFragment : BaseFragment() {
             locationSettingsResponseTask.addOnFailureListener {exception ->
                 if (exception is ResolvableApiException && resolve) {
                     try {
-                        exception.startResolutionForResult(activity!!, REQUEST_TURN_DEVICE_LOCATION_ON)
+                        startIntentSenderForResult(
+                            exception.resolution.intentSender,
+                            REQUEST_TURN_DEVICE_LOCATION_ON,
+                        null,
+                        0,
+                        0,
+                        0,
+                        null)
                     } catch (sendEx: IntentSender.SendIntentException) {
                         Log.d(TAG, "Error getting location settings resolution ${sendEx.message}")
                     }
@@ -249,6 +256,7 @@ class SaveReminderFragment : BaseFragment() {
                     }.show()
                 }
             }
+
             locationSettingsResponseTask.addOnCompleteListener {
                 if (it.isSuccessful) {
                     Log.d(TAG, "Add geofence for each location")
